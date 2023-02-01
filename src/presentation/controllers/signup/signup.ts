@@ -47,6 +47,7 @@ export class SignUpController implements Controller {
         return badRequest(new InvalidParamError("passwordConfirmation"));
       }
     } catch (error) {
+      console.error(error)
       return serverError();
     }
   }
