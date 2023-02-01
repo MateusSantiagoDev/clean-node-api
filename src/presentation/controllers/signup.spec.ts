@@ -2,29 +2,28 @@ import { SignUpController } from "./signup";
 import { MissingParamError, InvalidParamError, ServerError } from "../errors";
 import { EmailValidator } from "../protocols";
 
-
 interface SutTypes {
-    sut: SignUpController,
-    emailValidatorStub: EmailValidator,
+  sut: SignUpController;
+  emailValidatorStub: EmailValidator;
 }
 
 const makeEmailValidator = (): EmailValidator => {
-    class EmailValidatorStub implements EmailValidator {
-        isValid(email: string): boolean {
-            return true;
-        }
+  class EmailValidatorStub implements EmailValidator {
+    isValid(email: string): boolean {
+      return true;
     }
-    return new EmailValidatorStub()    
-}
+  }
+  return new EmailValidatorStub();
+};
 
-const makeSut = (): SutTypes => {    
-    const emailValidatorStub = makeEmailValidator()
-    const sut = new SignUpController(emailValidatorStub);
-    return {
-        sut,
-        emailValidatorStub
-    }
-}
+const makeSut = (): SutTypes => {
+  const emailValidatorStub = makeEmailValidator();
+  const sut = new SignUpController(emailValidatorStub);
+  return {
+    sut,
+    emailValidatorStub,
+  };
+};
 
 describe("SignUp Controller", () => {
   test("Should return 400 if no name is provided", () => {
@@ -87,7 +86,7 @@ describe("SignUp Controller", () => {
 
   test("Should return 400 if an invalid email is provided", () => {
     const { sut, emailValidatorStub } = makeSut();
-    jest.spyOn(emailValidatorStub, 'isValid').mockReturnValue(false);
+    jest.spyOn(emailValidatorStub, "isValid").mockReturnValue(false);
     const httpRequest = {
       body: {
         name: "any_name",
@@ -98,14 +97,12 @@ describe("SignUp Controller", () => {
     };
     const httpResponse = sut.handle(httpRequest);
     expect(httpResponse.statusCode).toBe(400);
-    expect(httpResponse.body).toEqual(
-      new InvalidParamError("email")
-    );
+    expect(httpResponse.body).toEqual(new InvalidParamError("email"));
   });
 
   test("Should call EmailValidator with correct email", () => {
     const { sut, emailValidatorStub } = makeSut();
-    const inValidSpy = jest.spyOn(emailValidatorStub, 'isValid');
+    const inValidSpy = jest.spyOn(emailValidatorStub, "isValid");
     const httpRequest = {
       body: {
         name: "any_name",
@@ -115,16 +112,13 @@ describe("SignUp Controller", () => {
       },
     };
     sut.handle(httpRequest);
-    expect(inValidSpy).toHaveBeenCalledWith('any_email@mail.com');
-
+    expect(inValidSpy).toHaveBeenCalledWith("any_email@mail.com");
   });
 
   test("Should return 500 if EmailValidator throws", () => {
-   
-  
     const { sut, emailValidatorStub } = makeSut();
-    jest.spyOn(emailValidatorStub, 'isValid').mockImplementationOnce(() => {
-      throw new Error()
+    jest.spyOn(emailValidatorStub, "isValid").mockImplementationOnce(() => {
+      throw new Error();
     });
     const httpRequest = {
       body: {
@@ -136,9 +130,6 @@ describe("SignUp Controller", () => {
     };
     const httpResponse = sut.handle(httpRequest);
     expect(httpResponse.statusCode).toBe(500);
-    expect(httpResponse.body).toEqual(
-      new ServerError()
-    );
+    expect(httpResponse.body).toEqual(new ServerError());
   });
-
 });
